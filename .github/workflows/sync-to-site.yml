@@ -19,7 +19,7 @@ jobs:
       - name: Copy logs files into site/logs/
         run: |
           mkdir -p site/logs
-          rsync -av --delete --exclude='.git' ./ site/logs/
+          rsync -av --delete --exclude='.git' ./ site/logs/ || [ $? -eq 24 ]
 
       - name: Commit and push to site
         run: |
