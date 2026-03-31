@@ -1,0 +1,31 @@
+name: Sync logs to site
+on:
+  push:
+    branches: [main]
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout logs
+        uses: actions/checkout@v4
+
+      - name: Checkout site
+        uses: actions/checkout@v4
+        with:
+          repository: isrl-research/isrl-research.github.io
+          token: ${{ secrets.SYNC_TOKEN }}
+          path: site
+
+      - name: Copy logs files into site/logs/
+        run: |
+          mkdir -p site/logs
+          rsync -av --delete --exclude='.git' ./ site/logs/
+
+      - name: Commit and push to site
+        run: |
+          cd site
+          git config user.name "iSRL Sync Bot"
+          git config user.email "sync-bot@users.noreply.github.com"
+          git add logs/
+          git diff --staged --quiet || git commit -m "sync(logs): ${{ github.event.head_commit.message }}"
+          git push
